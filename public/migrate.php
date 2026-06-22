@@ -27,7 +27,6 @@ try {
             continue;
         }
 
-        $pdo->beginTransaction();
         try {
             $pdo->exec((string) $migration['up']);
 
@@ -36,10 +35,8 @@ try {
             );
             $stmt->execute(['migration_name' => $name]);
 
-            $pdo->commit();
             $ran[] = $name;
         } catch (Throwable $e) {
-            $pdo->rollBack();
             throw $e;
         }
     }

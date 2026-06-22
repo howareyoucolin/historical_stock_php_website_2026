@@ -6,10 +6,43 @@ services:
     ports:
       - "8700:80"
     environment:
-      DB_HOST: host.docker.internal
+      DB_HOST: mysql
       DB_PORT: 3306
       DB_DATABASE: stock_report
       DB_USERNAME: stock_user
       DB_PASSWORD: stock_pass
     volumes:
       - ./:/var/www/html
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mysql:8.0
+    container_name: stock_report_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: stock_report
+      MYSQL_USER: stock_user
+      MYSQL_PASSWORD: stock_pass
+      MYSQL_ROOT_PASSWORD: root_pass
+    ports:
+      - "8701:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: stock_report_phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: root_pass
+    ports:
+      - "8702:80"
+    depends_on:
+      - mysql
+
+volumes:
+  mysql_data:

@@ -1,0 +1,13 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'db' => [
+        'host' => '127.0.0.1',
+        'database' => 'stock_report',
+        'username' => 'your_db_username',
+        'password' => 'your_db_password',
+        'charset' => 'utf8mb4',
+    ],
+];
