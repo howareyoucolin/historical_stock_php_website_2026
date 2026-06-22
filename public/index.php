@@ -97,7 +97,9 @@ function report_label(array $row): array
 
     return [
         'title' => $title,
-        'summary' => "End {$endDate} / Value {$endingValue} / Return {$returnPct}%",
+        'endDate' => $endDate,
+        'endingValue' => $endingValue,
+        'returnPct' => $returnPct,
     ];
 }
 
@@ -211,6 +213,10 @@ $pageKeywords = 'stock reports, simulation reports, portfolio summary, trading s
       color: var(--muted);
       font-size: 14px;
     }
+    .summary .figure {
+      color: #137333;
+      font-weight: 700;
+    }
     .pager {
       display: flex;
       gap: 14px;
@@ -261,7 +267,7 @@ $pageKeywords = 'stock reports, simulation reports, portfolio summary, trading s
             <a class="row" href="/report.php?id=<?= h($row['id']) ?>">
               <div class="meta">Report #<?= h($row['id']) ?> / <?= h($row['created_at']) ?></div>
               <div class="title"><?= h($label['title']) ?></div>
-              <div class="summary"><?= h($label['summary']) ?></div>
+              <div class="summary">End <?= h($label['endDate']) ?> / Value <span class="figure"><?= h($label['endingValue']) ?></span> / Return <span class="figure"><?= h($label['returnPct']) ?>%</span></div>
             </a>
           <?php endforeach; ?>
         </div>
