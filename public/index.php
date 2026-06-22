@@ -249,7 +249,7 @@ $pageKeywords = 'stock reports, simulation reports, portfolio summary, trading s
   <div class="shell">
     <main>
       <div class="header">
-        <h1>Home</h1>
+        <h1>Simulation Reports</h1>
         <p class="muted">Showing <?= h(count($reports)) ?> of <?= h($totalReports) ?> reports, newest first. Page <?= h($page) ?> of <?= h($totalPages) ?>.</p>
       </div>
 

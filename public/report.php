@@ -490,6 +490,10 @@ $reportPageKeywords = 'stock simulation report, portfolio performance, investmen
       color: var(--blue);
       text-decoration: none;
     }
+    .reportShell {
+      max-width: 1080px;
+      margin: 0 auto;
+    }
     .topline {
       font-size: 12px;
       letter-spacing: .08em;
@@ -1190,60 +1194,61 @@ $reportPageKeywords = 'stock simulation report, portfolio performance, investmen
 </head>
 <body>
   <main>
-    <p class="topline"><a href="/index.php">All Reports</a> / Report #<?= h($row['id']) ?></p>
-    <?php if (!$isValidJson): ?>
-      <div class="hero-card">
-        <div class="hero-strip"></div>
-        <div class="hero-body">
-          <h1>Report #<?= h($row['id']) ?></h1>
-          <p class="muted">Created at <?= h($row['created_at']) ?></p>
+    <div class="reportShell">
+      <p class="topline"><a href="/index.php">All Reports</a> / Report #<?= h($row['id']) ?></p>
+      <?php if (!$isValidJson): ?>
+        <div class="hero-card">
+          <div class="hero-strip"></div>
+          <div class="hero-body">
+            <h1>Report #<?= h($row['id']) ?></h1>
+            <p class="muted">Created at <?= h($row['created_at']) ?></p>
+          </div>
         </div>
-      </div>
-      <div class="card" style="margin-top: 18px;">
-        <pre><?= h($row['report_json']) ?></pre>
-      </div>
-    <?php else: ?>
-      <?php
-      $objective = is_array($report['objective'] ?? null) ? $report['objective'] : [];
-      $strategy = is_array($report['strategy'] ?? null) ? $report['strategy'] : [];
-      $thesis = is_array($report['thesis'] ?? null) ? $report['thesis'] : [];
-      $simulation = is_array($report['simulation'] ?? null) ? $report['simulation'] : [];
-      $activity = is_array($report['activity'] ?? null) ? $report['activity'] : [];
-      $portfolioSummary = is_array($report['portfolioSummary'] ?? null) ? $report['portfolioSummary'] : [];
-      $benchmark = is_array($report['benchmark'] ?? null) ? $report['benchmark'] : [];
-      $portfolio = is_array($report['portfolio'] ?? null) ? $report['portfolio'] : [];
-      $positions = is_array($report['positions'] ?? null) ? $report['positions'] : [];
-      $taxes = is_array($report['taxes'] ?? null) ? $report['taxes'] : [];
-      $takeaways = is_array($report['takeaways'] ?? null) ? $report['takeaways'] : [];
-      $agentLearning = is_array($report['agentLearning'] ?? null) ? $report['agentLearning'] : [];
-      $context = is_array($report['context'] ?? null) ? $report['context'] : [];
-      $timelineChangePercent = null;
-      if (($valuesSummary['first']['value'] ?? null) !== null) {
-          $firstValue = (float) $valuesSummary['first']['value'];
-          if ($firstValue != 0.0 && ($valuesSummary['last']['value'] ?? null) !== null) {
-              $timelineChangePercent = (((float) $valuesSummary['last']['value'] - $firstValue) / $firstValue) * 100;
-          }
-      }
-      if ($timelineChangePercent === null && ($valuesSummary['change'] ?? null) !== null) {
-          $timelineChangePercent = 0.0;
-      }
-      $timelineToneClass = tone_class(isset($valuesSummary['change']) ? (float) $valuesSummary['change'] : null);
-      $factualFindings = array_merge(
-          is_array($takeaways['worked'] ?? null) ? $takeaways['worked'] : [],
-          is_array($takeaways['didNotWork'] ?? null) ? $takeaways['didNotWork'] : []
-      );
-      $periodStart = section_value($simulation, 'simStartDate', '');
-      $periodLabel = $periodStart === ''
-          ? section_value($simulation, 'simEndDate')
-          : $periodStart . ' -> ' . section_value($simulation, 'simEndDate');
-      ?>
-      <div class="tabs" role="tablist" aria-label="Report data tabs">
-        <button class="tab-button is-active" type="button" role="tab" aria-selected="true" aria-controls="tab-summary" data-tab-target="tab-summary">Report Summary</button>
-        <button class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="tab-history" data-tab-target="tab-history">Activity Log</button>
-        <button class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="tab-values" data-tab-target="tab-values">Value Timeline</button>
-      </div>
+        <div class="card" style="margin-top: 18px;">
+          <pre><?= h($row['report_json']) ?></pre>
+        </div>
+      <?php else: ?>
+        <?php
+        $objective = is_array($report['objective'] ?? null) ? $report['objective'] : [];
+        $strategy = is_array($report['strategy'] ?? null) ? $report['strategy'] : [];
+        $thesis = is_array($report['thesis'] ?? null) ? $report['thesis'] : [];
+        $simulation = is_array($report['simulation'] ?? null) ? $report['simulation'] : [];
+        $activity = is_array($report['activity'] ?? null) ? $report['activity'] : [];
+        $portfolioSummary = is_array($report['portfolioSummary'] ?? null) ? $report['portfolioSummary'] : [];
+        $benchmark = is_array($report['benchmark'] ?? null) ? $report['benchmark'] : [];
+        $portfolio = is_array($report['portfolio'] ?? null) ? $report['portfolio'] : [];
+        $positions = is_array($report['positions'] ?? null) ? $report['positions'] : [];
+        $taxes = is_array($report['taxes'] ?? null) ? $report['taxes'] : [];
+        $takeaways = is_array($report['takeaways'] ?? null) ? $report['takeaways'] : [];
+        $agentLearning = is_array($report['agentLearning'] ?? null) ? $report['agentLearning'] : [];
+        $context = is_array($report['context'] ?? null) ? $report['context'] : [];
+        $timelineChangePercent = null;
+        if (($valuesSummary['first']['value'] ?? null) !== null) {
+            $firstValue = (float) $valuesSummary['first']['value'];
+            if ($firstValue != 0.0 && ($valuesSummary['last']['value'] ?? null) !== null) {
+                $timelineChangePercent = (((float) $valuesSummary['last']['value'] - $firstValue) / $firstValue) * 100;
+            }
+        }
+        if ($timelineChangePercent === null && ($valuesSummary['change'] ?? null) !== null) {
+            $timelineChangePercent = 0.0;
+        }
+        $timelineToneClass = tone_class(isset($valuesSummary['change']) ? (float) $valuesSummary['change'] : null);
+        $factualFindings = array_merge(
+            is_array($takeaways['worked'] ?? null) ? $takeaways['worked'] : [],
+            is_array($takeaways['didNotWork'] ?? null) ? $takeaways['didNotWork'] : []
+        );
+        $periodStart = section_value($simulation, 'simStartDate', '');
+        $periodLabel = $periodStart === ''
+            ? section_value($simulation, 'simEndDate')
+            : $periodStart . ' -> ' . section_value($simulation, 'simEndDate');
+        ?>
+        <div class="tabs" role="tablist" aria-label="Report data tabs">
+          <button class="tab-button is-active" type="button" role="tab" aria-selected="true" aria-controls="tab-summary" data-tab-target="tab-summary">Report Summary</button>
+          <button class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="tab-history" data-tab-target="tab-history">Activity Log</button>
+          <button class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="tab-values" data-tab-target="tab-values">Value Timeline</button>
+        </div>
 
-      <section id="tab-summary" class="tab-panel is-active" role="tabpanel">
+        <section id="tab-summary" class="tab-panel is-active" role="tabpanel">
         <article class="reportDoc">
           <header class="reportDocHeader">
             <span class="reportKicker">Simulation Report</span>
@@ -1452,9 +1457,9 @@ $reportPageKeywords = 'stock simulation report, portfolio performance, investmen
             <p class="reportMuted" style="margin-top: 10px;">As of <?= h(section_value($positions, 'asOfDate', section_value($simulation, 'simEndDate'))) ?></p>
           </section>
         </article>
-      </section>
+        </section>
 
-      <section id="tab-history" class="tab-panel" role="tabpanel">
+        <section id="tab-history" class="tab-panel" role="tabpanel">
         <section class="histories">
           <div class="historiesToolbar">
             <span class="historiesToolbarLabel">Show types</span>
@@ -1511,9 +1516,9 @@ $reportPageKeywords = 'stock simulation report, portfolio performance, investmen
             <?php endif; ?>
           </div>
         </section>
-      </section>
+        </section>
 
-      <section id="tab-values" class="tab-panel" role="tabpanel">
+        <section id="tab-values" class="tab-panel" role="tabpanel">
         <div class="section-stack">
           <section class="card">
             <div class="file-meta"><?= h($row['values_log_path']) ?></div>
@@ -1577,8 +1582,9 @@ $reportPageKeywords = 'stock simulation report, portfolio performance, investmen
           </section>
 
         </div>
-      </section>
-    <?php endif; ?>
+        </section>
+      <?php endif; ?>
+    </div>
     <?php require __DIR__ . '/footer.php'; ?>
   </main>
   <script>
