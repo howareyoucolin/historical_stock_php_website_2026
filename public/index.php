@@ -100,13 +100,19 @@ function report_label(array $row): array
         'summary' => "End {$endDate} / Value {$endingValue} / Return {$returnPct}%",
     ];
 }
+
+$pageTitle = 'Stock Simulation Reports Archive';
+$pageDescription = 'Browse saved stock simulation reports, review portfolio outcomes, and open detailed report summaries with performance, risk, and positions data.';
+$pageKeywords = 'stock reports, simulation reports, portfolio summary, trading simulation, investment report, stock portfolio, backtest archive';
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Stock Reports</title>
+  <title><?= h($pageTitle) ?></title>
+  <meta name="description" content="<?= h($pageDescription) ?>">
+  <meta name="keywords" content="<?= h($pageKeywords) ?>">
   <style>
     :root {
       --bg: #f7f9fc;

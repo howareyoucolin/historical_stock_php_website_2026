@@ -420,13 +420,29 @@ function build_values_summary(array $snapshots): array
     ];
 }
 
+$reportMeta = is_array($report) ? $report : [];
+$reportMetaStrategy = is_array($reportMeta['strategy'] ?? null) ? $reportMeta['strategy'] : [];
+$reportMetaObjective = is_array($reportMeta['objective'] ?? null) ? $reportMeta['objective'] : [];
+$reportMetaSimulation = is_array($reportMeta['simulation'] ?? null) ? $reportMeta['simulation'] : [];
+$reportMetaPortfolio = is_array($reportMeta['portfolioSummary'] ?? null) ? $reportMeta['portfolioSummary'] : [];
+$reportPageTitle = trim((string) ($reportMetaStrategy['name'] ?? '')) !== ''
+    ? (string) $reportMetaStrategy['name'] . ' | Stock Simulation Report'
+    : 'Stock Simulation Report #' . $row['id'];
+$reportEndingValue = isset($reportMetaPortfolio['currentTotal']) ? format_money_value($reportMetaPortfolio['currentTotal']) : 'N/A';
+$reportReturn = isset($reportMetaPortfolio['totalReturnPct']) ? number_format((float) $reportMetaPortfolio['totalReturnPct'], 2, '.', ',') . '%' : 'N/A';
+$reportEndDate = (string) ($reportMetaSimulation['simEndDate'] ?? 'latest date');
+$reportPageDescription = 'Detailed stock simulation report with portfolio performance, risk metrics, taxes, strategy notes, and report-date positions. End date ' . $reportEndDate . ', ending value ' . $reportEndingValue . ', total return ' . $reportReturn . '.';
+$reportPageKeywords = 'stock simulation report, portfolio performance, investment report, trading strategy report, positions table, portfolio return, risk metrics';
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Report #<?= h($row['id']) ?></title>
+  <title><?= h($reportPageTitle) ?></title>
+  <meta name="description" content="<?= h($reportPageDescription) ?>">
+  <meta name="keywords" content="<?= h($reportPageKeywords) ?>">
   <style>
     :root {
       --bg: #f7f9fc;
