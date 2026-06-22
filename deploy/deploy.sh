@@ -50,53 +50,47 @@ if [[ -n "${DREAMHOST_PASSWORD:-}" ]] && ! command -v sshpass >/dev/null 2>&1; t
   exit 1
 fi
 
-SSH_CMD=(ssh -p "${DREAMHOST_PORT}" -o StrictHostKeyChecking=accept-new)
-RSYNC_PREFIX=()
-RSYNC_RSH="ssh -p ${DREAMHOST_PORT} -o StrictHostKeyChecking=accept-new"
-
+# Build SSH options as plain strings (kept array-free so the script also runs on
+# the older bash 3.2 shipped with macOS). When a password is configured, force
+# password auth so a present-but-unusable local SSH key cannot trigger an
+# interactive passphrase prompt that would hang this non-interactive deploy.
+SSH_OPTS="-p ${DREAMHOST_PORT} -o StrictHostKeyChecking=accept-new"
+SSH_BIN="ssh"
+RSYNC_PREFIX=""
 if [[ -n "${DREAMHOST_PASSWORD:-}" ]]; then
+  SSH_OPTS="${SSH_OPTS} -o PreferredAuthentications=password -o PubkeyAuthentication=no"
   export SSHPASS="${DREAMHOST_PASSWORD}"
-  SSH_CMD=(sshpass -e "${SSH_CMD[@]}")
-  RSYNC_PREFIX=(sshpass -e)
+  SSH_BIN="sshpass -e ssh"
+  RSYNC_PREFIX="sshpass -e"
 fi
+RSYNC_RSH="ssh ${SSH_OPTS}"
+
+# Run a single command on the DreamHost server over SSH (stdin is forwarded).
+remote_exec() {
+  ${SSH_BIN} ${SSH_OPTS} "${DREAMHOST_USERNAME}@${DREAMHOST_HOST}" "$1"
+}
 
 echo "Ensuring remote directory exists: ${DREAMHOST_REMOTE_PATH}"
 if [[ "${DRY_RUN}" == true ]]; then
   echo "[dry-run] Would ensure remote directory exists: ${DREAMHOST_REMOTE_PATH}"
 else
-  "${SSH_CMD[@]}" "${DREAMHOST_USERNAME}@${DREAMHOST_HOST}" "mkdir -p '${DREAMHOST_REMOTE_PATH}'"
+  remote_exec "mkdir -p '${DREAMHOST_REMOTE_PATH}'"
 fi
 
-echo "Deploying stock_report_website to ${DREAMHOST_USERNAME}@${DREAMHOST_HOST}:${DREAMHOST_REMOTE_PATH}"
+echo "Deploying public/ contents to ${DREAMHOST_USERNAME}@${DREAMHOST_HOST}:${DREAMHOST_REMOTE_PATH}"
 cd "${PROJECT_ROOT}"
 
-RSYNC_ARGS=(
-  -az
-  --progress
-  ${DELETE_FLAG}
-  $([[ "${DRY_RUN}" == true ]] && printf '%s' "--dry-run")
-  --exclude=.git/
-  --exclude=.gitignore
-  --exclude=.dockerignore
-  --exclude=deploy/
-  --exclude=Dockerfile
-  --exclude=docker-compose.yml
-  --exclude=public/config.php
-  --exclude=storage/stock-reports/
-  -e "${RSYNC_RSH}"
-  ./
+# Sync only the contents of public/ into the site root so the app's front
+# controller (index.php) sits at the web root. config.php is excluded here and
+# generated remotely from the deploy env below. DRY_FLAG/DELETE_FLAG are left
+# unquoted so an empty value contributes no argument.
+DRY_FLAG=""
+[[ "${DRY_RUN}" == true ]] && DRY_FLAG="--dry-run"
+${RSYNC_PREFIX} rsync -az --progress ${DRY_FLAG} ${DELETE_FLAG} \
+  --exclude=config.php \
+  -e "${RSYNC_RSH}" \
+  ./public/ \
   "${DREAMHOST_USERNAME}@${DREAMHOST_HOST}:${DREAMHOST_REMOTE_PATH}/"
-)
-
-# Remove empty argument when --delete is not requested.
-FILTERED_RSYNC_ARGS=()
-for arg in "${RSYNC_ARGS[@]}"; do
-  if [[ -n "${arg}" ]]; then
-    FILTERED_RSYNC_ARGS+=("${arg}")
-  fi
-done
-
-"${RSYNC_PREFIX[@]}" rsync "${FILTERED_RSYNC_ARGS[@]}"
 
 if [[ "${DRY_RUN}" == true ]]; then
   echo "[dry-run] Rsync preview complete."
@@ -104,7 +98,7 @@ else
   echo "Deploy complete."
 fi
 
-REMOTE_CONFIG_PATH="${DREAMHOST_REMOTE_PATH}/public/config.php"
+REMOTE_CONFIG_PATH="${DREAMHOST_REMOTE_PATH}/config.php"
 REMOTE_STORAGE_PATH="${PROD_SESSION_FILES_DIR}"
 
 read -r -d '' REMOTE_CONFIG_CONTENT <<EOF || true
@@ -127,10 +121,10 @@ return [
 EOF
 
 if [[ "${DRY_RUN}" == true ]]; then
-  echo "[dry-run] Would write remote public/config.php at ${REMOTE_CONFIG_PATH}"
+  echo "[dry-run] Would write remote config.php at ${REMOTE_CONFIG_PATH}"
   echo "[dry-run] Would ensure session files directory exists at ${REMOTE_STORAGE_PATH}"
 else
-  echo "Writing remote public/config.php"
-  printf '%s\n' "${REMOTE_CONFIG_CONTENT}" | "${SSH_CMD[@]}" "${DREAMHOST_USERNAME}@${DREAMHOST_HOST}" "mkdir -p '${REMOTE_STORAGE_PATH}' && cat > '${REMOTE_CONFIG_PATH}'"
+  echo "Writing remote config.php"
+  printf '%s\n' "${REMOTE_CONFIG_CONTENT}" | remote_exec "mkdir -p '${REMOTE_STORAGE_PATH}' && cat > '${REMOTE_CONFIG_PATH}'"
   echo "Remote app config updated."
 fi
