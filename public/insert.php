@@ -28,16 +28,19 @@ try {
 
     $reportJson = load_source_file_contents($sessionFilesDir, require_post_string('report_json_file'));
     validate_json_string($reportJson, 'report_json_file');
+    $strategyTitle = extract_strategy_title($reportJson);
 
     $insertStmt = $pdo->prepare(
         <<<'SQL'
 INSERT INTO stock_reports (
+    strategy_title,
     report_json,
     account_json_path,
     history_log_path,
     meta_json_path,
     values_log_path
 ) VALUES (
+    :strategy_title,
     :report_json,
     '',
     '',
@@ -47,6 +50,7 @@ INSERT INTO stock_reports (
 SQL
     );
     $insertStmt->execute([
+        'strategy_title' => $strategyTitle,
         'report_json' => $reportJson,
     ]);
 
@@ -135,6 +139,28 @@ function validate_json_string(string $value, string $field): void
     if (json_last_error() !== JSON_ERROR_NONE) {
         throw new RuntimeException("Field {$field} must contain valid JSON text.", 400);
     }
+}
+
+function extract_strategy_title(string $reportJson): string
+{
+    $decoded = json_decode($reportJson, true);
+    if (!is_array($decoded)) {
+        return 'Unknown strategy';
+    }
+
+    $strategy = is_array($decoded['strategy'] ?? null) ? $decoded['strategy'] : [];
+    $summary = trim((string) ($strategy['summary'] ?? ''));
+    $name = trim((string) ($strategy['name'] ?? ''));
+
+    $title = $summary !== '' && $summary !== 'No strategy summary was provided.'
+        ? $summary
+        : $name;
+
+    if ($title === '') {
+        $title = 'Unknown strategy';
+    }
+
+    return mb_substr($title, 0, 255);
 }
 
 function copy_source_file(string $sourceDir, string $sourceName, string $batchDir, string $targetName): string
