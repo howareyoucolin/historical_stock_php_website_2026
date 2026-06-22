@@ -20,13 +20,13 @@ try {
     }
 
     $config = load_config();
-    $sessionFilesDir = configured_session_files_dir($config);
     $pdo = connect_pdo_from_config($config);
+    $sessionFilesDir = null;
 
     $storageDir = storage_root_dir();
     ensure_directory($storageDir);
 
-    $reportJson = load_source_file_contents($sessionFilesDir, require_post_string('report_json_file'));
+    $reportJson = load_input_file_contents($config, $sessionFilesDir, 'report_json_file');
     validate_json_string($reportJson, 'report_json_file');
     $strategyTitle = extract_strategy_title($reportJson);
 
@@ -58,10 +58,10 @@ SQL
     $batchDir = $storageDir . '/' . $stockReportId;
     ensure_directory($batchDir);
 
-    $accountJsonPath = copy_source_file($sessionFilesDir, require_post_string('account_json_file'), $batchDir, 'account.json');
-    $historyLogPath = copy_source_file($sessionFilesDir, require_post_string('history_log_file'), $batchDir, 'history.log');
-    $metaJsonPath = copy_source_file($sessionFilesDir, require_post_string('meta_json_file'), $batchDir, 'meta.json');
-    $valuesLogPath = copy_source_file($sessionFilesDir, require_post_string('values_log_file'), $batchDir, 'values.log');
+    $accountJsonPath = materialize_input_file($config, $sessionFilesDir, 'account_json_file', $batchDir, 'account.json');
+    $historyLogPath = materialize_input_file($config, $sessionFilesDir, 'history_log_file', $batchDir, 'history.log');
+    $metaJsonPath = materialize_input_file($config, $sessionFilesDir, 'meta_json_file', $batchDir, 'meta.json');
+    $valuesLogPath = materialize_input_file($config, $sessionFilesDir, 'values_log_file', $batchDir, 'values.log');
 
     validate_json_file($accountJsonPath, 'account_json');
     validate_json_file($metaJsonPath, 'meta_json');
@@ -131,6 +131,88 @@ function require_post_string(string $key): string
     }
 
     return $_POST[$key];
+}
+
+function has_uploaded_file(string $key): bool
+{
+    if (!isset($_FILES[$key]) || !is_array($_FILES[$key])) {
+        return false;
+    }
+
+    $error = (int) ($_FILES[$key]['error'] ?? UPLOAD_ERR_NO_FILE);
+
+    return $error !== UPLOAD_ERR_NO_FILE;
+}
+
+function uploaded_file_tmp_path(string $key): string
+{
+    if (!isset($_FILES[$key]) || !is_array($_FILES[$key])) {
+        throw new RuntimeException("Missing required upload: {$key}", 400);
+    }
+
+    $error = (int) ($_FILES[$key]['error'] ?? UPLOAD_ERR_NO_FILE);
+    if ($error !== UPLOAD_ERR_OK) {
+        throw new RuntimeException("Upload failed for {$key}.", 400);
+    }
+
+    $tmpName = (string) ($_FILES[$key]['tmp_name'] ?? '');
+    if ($tmpName === '' || !is_uploaded_file($tmpName)) {
+        throw new RuntimeException("Uploaded file missing for {$key}.", 400);
+    }
+
+    return $tmpName;
+}
+
+function require_session_files_dir(array $config, ?string &$sessionFilesDir): string
+{
+    if ($sessionFilesDir !== null) {
+        return $sessionFilesDir;
+    }
+
+    $sessionFilesDir = configured_session_files_dir($config);
+
+    return $sessionFilesDir;
+}
+
+function load_input_file_contents(array $config, ?string &$sessionFilesDir, string $key): string
+{
+    if (has_uploaded_file($key)) {
+        $contents = file_get_contents(uploaded_file_tmp_path($key));
+        if ($contents === false) {
+            throw new RuntimeException("Could not read uploaded file: {$key}", 500);
+        }
+
+        return $contents;
+    }
+
+    return load_source_file_contents(
+        require_session_files_dir($config, $sessionFilesDir),
+        require_post_string($key)
+    );
+}
+
+function materialize_input_file(
+    array $config,
+    ?string &$sessionFilesDir,
+    string $key,
+    string $batchDir,
+    string $targetName
+): string {
+    if (has_uploaded_file($key)) {
+        $targetPath = $batchDir . '/' . $targetName;
+        if (!move_uploaded_file(uploaded_file_tmp_path($key), $targetPath)) {
+            throw new RuntimeException("Could not store uploaded file: {$key}", 500);
+        }
+
+        return $targetPath;
+    }
+
+    return copy_source_file(
+        require_session_files_dir($config, $sessionFilesDir),
+        require_post_string($key),
+        $batchDir,
+        $targetName
+    );
 }
 
 function validate_json_string(string $value, string $field): void
