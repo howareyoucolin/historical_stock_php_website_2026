@@ -263,7 +263,18 @@ function parse_history_entries(string $contents): array
             continue;
         }
 
-        $parts = preg_split('/\s+/', $line) ?: [];
+        $noteMarker = ' note=';
+        $markerIndex = strpos($line, $noteMarker);
+        $head = $markerIndex === false ? $line : substr($line, 0, $markerIndex);
+        $note = '';
+
+        if ($markerIndex !== false) {
+            $rawNote = substr($line, $markerIndex + strlen($noteMarker));
+            $decodedNote = json_decode($rawNote, true);
+            $note = is_string($decodedNote) ? $decodedNote : trim($rawNote, '"');
+        }
+
+        $parts = preg_split('/\s+/', $head) ?: [];
         if (count($parts) < 2) {
             continue;
         }
@@ -274,10 +285,11 @@ function parse_history_entries(string $contents): array
             'stock' => '',
             'quantity' => '',
             'price' => '',
+            'acquired' => '',
             'cash' => '',
             'sim' => '',
             'term' => '',
-            'note' => '',
+            'note' => $note,
         ];
 
         foreach ($parts as $part) {
@@ -299,14 +311,14 @@ function parse_history_entries(string $contents): array
                 $entry['quantity'] = $value;
             } elseif ($key === 'price') {
                 $entry['price'] = $value;
+            } elseif ($key === 'acquired') {
+                $entry['acquired'] = $value;
             } elseif ($key === 'cash') {
                 $entry['cash'] = $value;
             } elseif ($key === 'sim') {
                 $entry['sim'] = $value;
             } elseif ($key === 'term') {
                 $entry['term'] = $value;
-            } elseif ($key === 'note') {
-                $entry['note'] = $value;
             }
         }
 
@@ -330,7 +342,7 @@ function build_history_summary(array $entries): array
     return [
         'total' => count($entries),
         'counts' => $counts,
-        'recent' => array_slice(array_reverse($entries), 0, 120),
+        'recent' => array_reverse($entries),
     ];
 }
 
@@ -573,65 +585,109 @@ $reportPageKeywords = 'stock simulation report, portfolio performance, investmen
     .tab-panel.is-active {
       display: block;
     }
-    .data-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
+    .histories {
+      border: 1px solid rgba(120, 72, 50, 0.12);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.5);
+      overflow: hidden;
     }
-    .data-table th,
-    .data-table td {
-      padding: 10px 12px;
-      border-bottom: 1px solid #edf0f4;
-      text-align: left;
-      vertical-align: top;
-    }
-    .data-table th {
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: .06em;
-      color: var(--subtle);
-      font-weight: 700;
-    }
-    .data-table td {
-      color: var(--muted);
-    }
-    .data-table td strong {
-      color: var(--text);
-      font-weight: 600;
-    }
-    .toolbar {
+    .historiesToolbar {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       gap: 10px 14px;
       padding: 14px 16px;
-      margin: 0 0 14px;
-      border: 1px solid #edf0f4;
-      border-radius: 12px;
-      background: #f8fafd;
+      border-bottom: 1px solid rgba(120, 72, 50, 0.1);
+      background: rgba(243, 230, 218, 0.35);
     }
-    .toolbar-label {
-      font-size: 11px;
+    .historiesToolbarLabel {
+      font-size: 0.72rem;
       font-weight: 700;
       letter-spacing: 0.04em;
       text-transform: uppercase;
-      color: var(--subtle);
+      color: var(--muted);
     }
-    .filters {
+    .historiesFilters {
       display: flex;
       flex-wrap: wrap;
       gap: 8px 12px;
     }
-    .filter-option {
+    .historiesFilterOption {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      font-size: 13px;
+      font-size: 0.8rem;
       color: var(--text);
       cursor: pointer;
     }
-    .filter-checkbox {
+    .historiesFilterCheckbox {
       margin: 0;
+    }
+    .historiesFilteredEmpty {
+      padding: 28px 18px;
+      text-align: center;
+      color: var(--muted);
+    }
+    .historiesTable {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+    .historiesTable th,
+    .historiesTable td {
+      padding: 8px 16px;
+      text-align: right;
+      border-bottom: 1px solid rgba(120, 72, 50, 0.1);
+      vertical-align: top;
+    }
+    .historiesTable .alignLeft {
+      text-align: left;
+    }
+    .historiesTable thead th {
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: var(--muted);
+      background: rgba(243, 230, 218, 0.6);
+    }
+    .historiesTable tbody tr:hover {
+      background: rgba(255, 255, 255, 0.6);
+    }
+    .historiesTable .action {
+      font-weight: 700;
+      color: #c25a36;
+    }
+    .historiesTable .symbol {
+      font-weight: 600;
+      color: var(--text);
+    }
+    .historiesTable .note {
+      white-space: normal;
+      min-width: 320px;
+      max-width: 640px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+    }
+    .termBadge {
+      display: inline-block;
+      padding: 1px 8px;
+      border-radius: 999px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+    }
+    .termBadge.long {
+      background: rgba(47, 143, 87, 0.14);
+      color: var(--sim-pos);
+    }
+    .termBadge.short {
+      background: rgba(192, 57, 43, 0.12);
+      color: var(--sim-neg);
     }
     .section-stack {
       display: grid;
@@ -1399,65 +1455,62 @@ $reportPageKeywords = 'stock simulation report, portfolio performance, investmen
       </section>
 
       <section id="tab-history" class="tab-panel" role="tabpanel">
-        <div class="section-stack">
-          <section class="card">
-            <div class="file-meta"><?= h($row['history_log_path']) ?></div>
-            <div class="mini-grid">
-              <div class="mini-stat">
-                <div class="mini-stat-label">Total events</div>
-                <div class="mini-stat-value"><?= h(format_display_value($historySummary['total'])) ?></div>
-              </div>
-              <?php foreach ($historySummary['counts'] as $type => $count): ?>
-                <div class="mini-stat">
-                  <div class="mini-stat-label"><?= h($type) ?></div>
-                  <div class="mini-stat-value"><?= h(format_display_value($count)) ?></div>
-                </div>
-              <?php endforeach; ?>
-            </div>
-          </section>
-
-          <div class="toolbar">
-            <span class="toolbar-label">Show types</span>
-            <div class="filters" role="group" aria-label="Filter activity log by event type">
+        <section class="histories">
+          <div class="historiesToolbar">
+            <span class="historiesToolbarLabel">Show types</span>
+            <div class="historiesFilters" role="group" aria-label="Filter history by event type">
               <?php foreach ($historyTypes as $type): ?>
-                <label class="filter-option">
-                  <input class="filter-checkbox" type="checkbox" checked data-history-filter="<?= h($type) ?>">
+                <?php $isChecked = !in_array($type, ['DIVIDEND', 'INTEREST'], true); ?>
+                <label class="historiesFilterOption">
+                  <input class="historiesFilterCheckbox" type="checkbox" <?= $isChecked ? 'checked' : '' ?> data-history-filter="<?= h($type) ?>">
                   <span><?= h($type) ?></span>
                 </label>
               <?php endforeach; ?>
             </div>
           </div>
-
-          <section class="card">
-            <h2>Recent Activity</h2>
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Type</th>
-                  <th>Sim date</th>
-                  <th>Stock</th>
-                  <th>Qty</th>
-                  <th>Price</th>
-                  <th>Cash</th>
-                  <th>Note</th>
-                </tr>
-              </thead>
-              <tbody>
-                <?php foreach ($historySummary['recent'] as $entry): ?>
-                  <tr data-history-type="<?= h($entry['type']) ?>">
-                    <td><strong><?= h($entry['type']) ?></strong></td>
-                    <td><?= h($entry['sim']) ?></td>
-                    <td><?= h($entry['stock']) ?></td>
-                    <td><?= h(format_display_value($entry['quantity'])) ?></td>
-                    <td><?= h(format_display_value($entry['price'])) ?></td>
-                    <td class="<?= h(metric_value_class('cash', $entry['cash'])) ?>"><?= h(format_display_value($entry['cash'])) ?></td>
-                    <td><?= h($entry['note']) ?></td>
+          <div class="tableScroll">
+            <?php if ($historySummary['recent'] === []): ?>
+              <div class="historiesFilteredEmpty">No activity recorded yet. Buys, sells, dividends, deposits, and corporate actions will show up here.</div>
+            <?php else: ?>
+              <table class="historiesTable">
+                <thead>
+                  <tr>
+                    <th class="alignLeft" scope="col">Date</th>
+                    <th class="alignLeft" scope="col">Action</th>
+                    <th class="alignLeft" scope="col">Symbol</th>
+                    <th scope="col">Qty</th>
+                    <th scope="col">Price</th>
+                    <th class="alignLeft" scope="col">Acquired</th>
+                    <th class="alignLeft" scope="col">Term</th>
+                    <th scope="col">Cash</th>
+                    <th class="alignLeft" scope="col">Note</th>
                   </tr>
-                <?php endforeach; ?>
-              </tbody>
-            </table>
-          </section>
-        </div>
+                </thead>
+                <tbody>
+                  <?php foreach ($historySummary['recent'] as $entry): ?>
+                    <tr data-history-type="<?= h($entry['type']) ?>">
+                      <td class="alignLeft"><?= h($entry['sim'] ?: '—') ?></td>
+                      <td class="alignLeft action"><?= h($entry['type']) ?></td>
+                      <td class="alignLeft symbol"><?= h($entry['stock'] !== '' ? $entry['stock'] : '—') ?></td>
+                      <td><?= h($entry['quantity'] !== '' ? format_display_value($entry['quantity']) : '—') ?></td>
+                      <td><?= h($entry['price'] !== '' ? format_display_value($entry['price']) : '—') ?></td>
+                      <td class="alignLeft"><?= h($entry['acquired'] !== '' ? $entry['acquired'] : '—') ?></td>
+                      <td class="alignLeft">
+                        <?php if ($entry['term'] !== ''): ?>
+                          <span class="termBadge <?= h(strtolower($entry['term'])) ?>"><?= h($entry['term']) ?></span>
+                        <?php else: ?>
+                          —
+                        <?php endif; ?>
+                      </td>
+                      <td class="<?= h(metric_value_class('cash', $entry['cash'])) ?>"><?= h($entry['cash'] !== '' ? $entry['cash'] : '—') ?></td>
+                      <td class="alignLeft note"><?= h($entry['note'] !== '' ? $entry['note'] : '—') ?></td>
+                    </tr>
+                  <?php endforeach; ?>
+                </tbody>
+              </table>
+            <?php endif; ?>
+          </div>
+        </section>
       </section>
 
       <section id="tab-values" class="tab-panel" role="tabpanel">
@@ -1566,11 +1619,38 @@ $reportPageKeywords = 'stock simulation report, portfolio performance, investmen
             .map((input) => input.getAttribute('data-history-filter'))
             .filter((value) => value !== null)
         );
+        let visibleCount = 0;
 
         historyRows.forEach((row) => {
           const type = row.getAttribute('data-history-type');
-          row.style.display = type !== null && selected.has(type) ? '' : 'none';
+          const shouldShow = type !== null && selected.has(type);
+          row.style.display = shouldShow ? '' : 'none';
+          if (shouldShow) {
+            visibleCount += 1;
+          }
         });
+
+        const table = document.querySelector('.historiesTable');
+        const tableScroll = table?.parentElement;
+        if (!table || !tableScroll) {
+          return;
+        }
+
+        let emptyState = tableScroll.querySelector('.historiesFilteredEmpty');
+        if (visibleCount === 0) {
+          table.style.display = 'none';
+          if (!emptyState) {
+            emptyState = document.createElement('div');
+            emptyState.className = 'historiesFilteredEmpty';
+            emptyState.textContent = 'No history rows match the selected data types.';
+            tableScroll.appendChild(emptyState);
+          }
+        } else {
+          table.style.display = '';
+          if (emptyState) {
+            emptyState.remove();
+          }
+        }
       }
 
       historyFilters.forEach((input) => {
