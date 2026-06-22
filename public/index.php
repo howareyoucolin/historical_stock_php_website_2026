@@ -149,12 +149,6 @@ function report_label(array $row): array
       font-size: 14px;
     }
     .muted { color: var(--muted); }
-    .layout {
-      display: grid;
-      grid-template-columns: minmax(0, 2fr) minmax(280px, 0.9fr);
-      gap: 18px;
-      align-items: start;
-    }
     .card {
       background: var(--panel);
       border: 1px solid var(--panel-border);
@@ -171,33 +165,6 @@ function report_label(array $row): array
       background: var(--blue);
       border-radius: 0 0 8px 8px;
       margin-left: 32px;
-    }
-    .hero {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 18px;
-      padding: 26px 28px 18px;
-      border-bottom: 1px solid #edf0f4;
-    }
-    .metric-label {
-      font-size: 13px;
-      color: var(--muted);
-      margin-bottom: 8px;
-      font-weight: 600;
-    }
-    .metric-value {
-      font-size: 34px;
-      line-height: 1;
-      margin-bottom: 8px;
-      font-weight: 400;
-    }
-    .metric-note {
-      color: var(--subtle);
-      font-size: 13px;
-    }
-    .metric-note strong {
-      color: var(--blue);
-      font-weight: 600;
     }
     .report-list {
       display: grid;
@@ -238,39 +205,6 @@ function report_label(array $row): array
       color: var(--muted);
       font-size: 14px;
     }
-    .side-card {
-      padding: 24px 24px 20px;
-    }
-    .side-title {
-      font-size: 12px;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      font-weight: 700;
-      color: var(--muted);
-      margin-bottom: 14px;
-    }
-    .side-big {
-      font-size: 48px;
-      font-weight: 400;
-      margin-bottom: 18px;
-    }
-    .side-list {
-      display: grid;
-      gap: 12px;
-      padding-top: 14px;
-      border-top: 1px solid #edf0f4;
-    }
-    .side-item {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      font-size: 14px;
-      color: var(--muted);
-    }
-    .side-item strong {
-      color: var(--text);
-      font-weight: 600;
-    }
     .pager {
       display: flex;
       gap: 14px;
@@ -283,14 +217,9 @@ function report_label(array $row): array
       font-size: 14px;
       font-weight: 600;
     }
-    @media (max-width: 960px) {
-      .layout { grid-template-columns: 1fr; }
-      .hero { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    }
     @media (max-width: 640px) {
       .shell { padding: 20px 14px 32px; }
       h1 { font-size: 30px; }
-      .hero { grid-template-columns: 1fr; padding: 22px 20px 14px; }
       .card-strip { margin-left: 20px; }
       .report-list { padding: 16px; }
       .title { font-size: 20px; }
@@ -305,64 +234,28 @@ function report_label(array $row): array
         <p class="muted">Showing <?= h(count($reports)) ?> of <?= h($totalReports) ?> reports, newest first. Page <?= h($page) ?> of <?= h($totalPages) ?>.</p>
       </div>
 
-      <div class="layout">
-        <section class="card primary-card">
-          <div class="card-strip"></div>
-          <div class="hero">
-            <div>
-              <div class="metric-label">Stored reports</div>
-              <div class="metric-value"><?= h($totalReports) ?></div>
-              <div class="metric-note"><strong>Active archive</strong> of uploaded simulation summaries</div>
-            </div>
-            <div>
-              <div class="metric-label">Reports per page</div>
-              <div class="metric-value"><?= h($perPage) ?></div>
-              <div class="metric-note">Simple pagination for quick scanning</div>
-            </div>
-            <div>
-              <div class="metric-label">Current page</div>
-              <div class="metric-value"><?= h($page) ?></div>
-              <div class="metric-note">Sorted by <strong>created time desc</strong></div>
-            </div>
-            <div>
-              <div class="metric-label">Latest report id</div>
-              <div class="metric-value"><?= h($reports[0]['id'] ?? 0) ?></div>
-              <div class="metric-note">Click any card to open full report details</div>
-            </div>
-          </div>
+      <section class="card primary-card">
+        <div class="card-strip"></div>
+        <div class="report-list">
+          <?php foreach ($reports as $row): ?>
+            <?php $label = report_label($row); ?>
+            <a class="row" href="/report.php?id=<?= h($row['id']) ?>">
+              <div class="meta">Report #<?= h($row['id']) ?> / <?= h($row['created_at']) ?></div>
+              <div class="title"><?= h($label['title']) ?></div>
+              <div class="summary"><?= h($label['summary']) ?></div>
+            </a>
+          <?php endforeach; ?>
+        </div>
 
-          <div class="report-list">
-            <?php foreach ($reports as $row): ?>
-              <?php $label = report_label($row); ?>
-              <a class="row" href="/report.php?id=<?= h($row['id']) ?>">
-                <div class="meta">Report #<?= h($row['id']) ?> / <?= h($row['created_at']) ?></div>
-                <div class="title"><?= h($label['title']) ?></div>
-                <div class="summary"><?= h($label['summary']) ?></div>
-              </a>
-            <?php endforeach; ?>
-          </div>
-
-          <div class="pager">
-            <?php if ($page > 1): ?>
-              <a href="/index.php?page=<?= h($page - 1) ?>">Newer</a>
-            <?php endif; ?>
-            <?php if ($page < $totalPages): ?>
-              <a href="/index.php?page=<?= h($page + 1) ?>">Older</a>
-            <?php endif; ?>
-          </div>
-        </section>
-
-        <aside class="card side-card">
-          <div class="side-title">Reports Snapshot</div>
-          <div class="side-big"><?= h(count($reports)) ?></div>
-          <div class="side-list">
-            <div class="side-item"><span>Newest first</span><strong>Yes</strong></div>
-            <div class="side-item"><span>Detail view</span><strong>Document format</strong></div>
-            <div class="side-item"><span>Strategy title</span><strong>Saved in table</strong></div>
-            <div class="side-item"><span>Storage links</span><strong>Per report id</strong></div>
-          </div>
-        </aside>
-      </div>
+        <div class="pager">
+          <?php if ($page > 1): ?>
+            <a href="/index.php?page=<?= h($page - 1) ?>">Newer</a>
+          <?php endif; ?>
+          <?php if ($page < $totalPages): ?>
+            <a href="/index.php?page=<?= h($page + 1) ?>">Older</a>
+          <?php endif; ?>
+        </div>
+      </section>
     </main>
   </div>
 </body>

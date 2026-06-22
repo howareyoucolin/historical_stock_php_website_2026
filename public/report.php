@@ -846,6 +846,48 @@ function build_values_summary(array $snapshots): array
       margin: 0;
       color: var(--muted);
     }
+    .reportTableScroll {
+      margin-top: 14px;
+      overflow-x: auto;
+      border: 1px solid rgba(120, 72, 50, 0.12);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.55);
+    }
+    .reportTable {
+      width: 100%;
+      min-width: 880px;
+      border-collapse: collapse;
+      font-size: 0.84rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .reportTable th,
+    .reportTable td {
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(120, 72, 50, 0.1);
+      text-align: right;
+      white-space: nowrap;
+    }
+    .reportTable thead th {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: rgba(243, 230, 218, 0.55);
+    }
+    .reportTable tbody tr:hover {
+      background: rgba(255, 255, 255, 0.7);
+    }
+    .reportTable tbody tr:last-child td {
+      border-bottom: none;
+    }
+    .reportTable .alignLeft {
+      text-align: left;
+    }
+    .reportPositionName {
+      font-weight: 700;
+      color: #7a4c35;
+    }
     pre {
       margin: 0;
       white-space: pre-wrap;
