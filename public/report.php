@@ -1095,6 +1095,19 @@ $reportPageKeywords = 'stock simulation report, portfolio performance, investmen
       border-radius: 14px;
       background: var(--sim-surface);
     }
+    .site-footer {
+      margin-top: 24px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .site-footer a {
+      color: var(--blue);
+      text-decoration: none;
+    }
+    .site-footer a:hover {
+      text-decoration: underline;
+    }
     @media (max-width: 900px) {
       .grid { grid-template-columns: 1fr; }
       .mini-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -1513,6 +1526,7 @@ $reportPageKeywords = 'stock simulation report, portfolio performance, investmen
         </div>
       </section>
     <?php endif; ?>
+    <?php require __DIR__ . '/footer.php'; ?>
   </main>
   <script>
     (function () {

@@ -223,6 +223,19 @@ $pageKeywords = 'stock reports, simulation reports, portfolio summary, trading s
       font-size: 14px;
       font-weight: 600;
     }
+    .site-footer {
+      margin-top: 22px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .site-footer a {
+      color: var(--blue);
+      text-decoration: none;
+    }
+    .site-footer a:hover {
+      text-decoration: underline;
+    }
     @media (max-width: 640px) {
       .shell { padding: 20px 14px 32px; }
       h1 { font-size: 30px; }
@@ -262,6 +275,7 @@ $pageKeywords = 'stock reports, simulation reports, portfolio summary, trading s
           <?php endif; ?>
         </div>
       </section>
+      <?php require __DIR__ . '/footer.php'; ?>
     </main>
   </div>
 </body>
