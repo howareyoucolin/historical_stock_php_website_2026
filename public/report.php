@@ -98,6 +98,15 @@ function render_scored_items(array $items): void
     echo '</ul>';
 }
 
+function scored_item_text(mixed $item): string
+{
+    if (is_array($item)) {
+        return (string) ($item['text'] ?? '');
+    }
+
+    return (string) $item;
+}
+
 function format_display_value(mixed $value): string
 {
     if (is_int($value) || is_float($value)) {
@@ -699,6 +708,144 @@ function build_values_summary(array $snapshots): array
     .full {
       grid-column: 1 / -1;
     }
+    .reportDoc {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 34px 38px 42px;
+      border: 1px solid rgba(120, 72, 50, 0.12);
+      border-radius: 22px;
+      background: linear-gradient(180deg, rgba(255, 252, 247, 0.98), rgba(251, 244, 236, 0.98));
+      box-shadow: 0 20px 50px rgba(120, 72, 50, 0.08);
+    }
+    .reportDocHeader {
+      padding-bottom: 20px;
+      border-bottom: 2px solid rgba(120, 72, 50, 0.1);
+    }
+    .reportKicker {
+      display: inline-block;
+      margin-bottom: 10px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .reportDocHeader h1 {
+      margin: 0;
+      font-size: 2.15rem;
+      line-height: 1.05;
+      color: var(--text);
+      font-weight: 500;
+      letter-spacing: 0;
+    }
+    .reportLead {
+      margin: 14px 0 0;
+      max-width: 760px;
+      font-size: 1rem;
+      line-height: 1.7;
+      color: var(--muted);
+    }
+    .reportSection {
+      padding-top: 26px;
+    }
+    .reportSection h2 {
+      margin: 0 0 12px;
+      font-size: 1.15rem;
+      color: var(--text);
+      font-weight: 600;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+    .reportSummaryList {
+      margin: 0;
+      border-top: 1px solid rgba(120, 72, 50, 0.08);
+    }
+    .reportSummaryRow {
+      display: grid;
+      grid-template-columns: minmax(160px, 220px) minmax(0, 1fr);
+      gap: 12px 20px;
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(120, 72, 50, 0.08);
+    }
+    .reportSummaryRow dt {
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .reportSummaryRow dd {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin: 0;
+      text-align: left;
+    }
+    .reportSummaryRow strong {
+      font-size: 1.45rem;
+      line-height: 1.1;
+      color: var(--text);
+    }
+    .reportSummaryRow span {
+      color: var(--muted);
+    }
+    .reportBodyStrong {
+      margin: 0 0 6px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .reportBody,
+    .reportMuted {
+      margin: 0;
+      line-height: 1.7;
+    }
+    .reportMuted {
+      color: var(--muted);
+    }
+    .reportInlineMeta {
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--muted);
+    }
+    .reportFacts {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+    }
+    .reportFacts div {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(120, 72, 50, 0.08);
+    }
+    .reportFacts div:last-child {
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+    .reportFacts dt {
+      color: var(--muted);
+    }
+    .reportFacts dd {
+      margin: 0;
+      text-align: right;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .reportBullets {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding-left: 20px;
+      line-height: 1.6;
+      color: var(--text);
+      font-size: 14px;
+    }
+    .reportEmptyLine,
+    .reportEmpty {
+      margin: 0;
+      color: var(--muted);
+    }
     pre {
       margin: 0;
       white-space: pre-wrap;
@@ -893,6 +1040,7 @@ function build_values_summary(array $snapshots): array
     @media (max-width: 900px) {
       .grid { grid-template-columns: 1fr; }
       .mini-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .reportDoc { padding: 26px 22px 30px; }
     }
     @media (max-width: 640px) {
       main { padding: 20px 14px 40px; }
@@ -906,6 +1054,10 @@ function build_values_summary(array $snapshots): array
       .summaryChange { text-align: left; }
       .chartYLabel,
       .chartXLabel { font-size: 11px; }
+      .reportDocHeader h1 { font-size: 1.75rem; }
+      .reportSummaryRow { grid-template-columns: minmax(0, 1fr); }
+      .reportFacts div { flex-direction: column; }
+      .reportFacts dd { text-align: left; }
     }
   </style>
 </head>
@@ -927,6 +1079,7 @@ function build_values_summary(array $snapshots): array
       <?php
       $objective = is_array($report['objective'] ?? null) ? $report['objective'] : [];
       $strategy = is_array($report['strategy'] ?? null) ? $report['strategy'] : [];
+      $thesis = is_array($report['thesis'] ?? null) ? $report['thesis'] : [];
       $simulation = is_array($report['simulation'] ?? null) ? $report['simulation'] : [];
       $activity = is_array($report['activity'] ?? null) ? $report['activity'] : [];
       $portfolioSummary = is_array($report['portfolioSummary'] ?? null) ? $report['portfolioSummary'] : [];
@@ -947,19 +1100,15 @@ function build_values_summary(array $snapshots): array
           $timelineChangePercent = 0.0;
       }
       $timelineToneClass = tone_class(isset($valuesSummary['change']) ? (float) $valuesSummary['change'] : null);
+      $factualFindings = array_merge(
+          is_array($takeaways['worked'] ?? null) ? $takeaways['worked'] : [],
+          is_array($takeaways['didNotWork'] ?? null) ? $takeaways['didNotWork'] : []
+      );
+      $periodStart = section_value($simulation, 'simStartDate', '');
+      $periodLabel = $periodStart === ''
+          ? section_value($simulation, 'simEndDate')
+          : $periodStart . ' -> ' . section_value($simulation, 'simEndDate');
       ?>
-      <div class="hero">
-        <div class="hero-card">
-          <div class="hero-strip"></div>
-          <div class="hero-body">
-            <p class="topline"><?= h(section_value($report, 'sessionId')) ?> / <?= h($row['created_at']) ?></p>
-            <h1><?= h(section_value($objective, 'title', 'Simulation Report')) ?></h1>
-            <p class="hero-summary"><strong><?= h(section_value($strategy, 'name')) ?></strong> (<?= h(section_value($strategy, 'version')) ?>)<?php if (section_value($takeaways, 'summary', '') !== ''): ?> · <?= h(section_value($takeaways, 'summary', section_value($strategy, 'summary'))) ?><?php endif; ?></p>
-            <div class="hero-note"><?= h(section_value($report, 'note')) ?></div>
-          </div>
-        </div>
-      </div>
-
       <div class="tabs" role="tablist" aria-label="Report data tabs">
         <button class="tab-button is-active" type="button" role="tab" aria-selected="true" aria-controls="tab-summary" data-tab-target="tab-summary">Report Summary</button>
         <button class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="tab-history" data-tab-target="tab-history">Activity Log</button>
@@ -967,92 +1116,172 @@ function build_values_summary(array $snapshots): array
       </div>
 
       <section id="tab-summary" class="tab-panel is-active" role="tabpanel">
-        <div class="grid">
-          <section class="card">
-            <h2>Simulation</h2>
-            <?php render_key_values([
-                'Start Date' => section_value($simulation, 'simStartDate'),
-                'End Date' => section_value($simulation, 'simEndDate'),
-                'Starting Value' => section_value($simulation, 'startingValue'),
-                'Ending Value' => section_value($simulation, 'endingValue'),
-                'Total Return %' => section_value($simulation, 'totalReturnPct'),
-                'Annualized Return %' => section_value($simulation, 'annualizedReturnPct'),
-            ]); ?>
+        <article class="reportDoc">
+          <header class="reportDocHeader">
+            <span class="reportKicker">Simulation Report</span>
+            <h1><?= h(section_value($strategy, 'name', 'Unnamed strategy')) ?></h1>
+            <p class="reportLead"><?= h(section_value($takeaways, 'summary', 'No written assessment is available for this report yet.')) ?></p>
+          </header>
+
+          <section class="reportSection">
+            <h2>Thesis</h2>
+            <p class="reportBody"><?= h(section_value($thesis, 'summary', 'No forward-looking thesis was provided.')) ?></p>
           </section>
 
-          <section class="card">
-            <h2>Portfolio Summary</h2>
-            <?php render_key_values([
-                'Principal' => section_value($portfolioSummary, 'principal'),
-                'Current Total' => section_value($portfolioSummary, 'currentTotal'),
-                'Gain / Loss' => section_value($portfolioSummary, 'totalGainLoss'),
-                'Return %' => section_value($portfolioSummary, 'totalReturnPct'),
-                'Unrealized Gain / Loss' => section_value($portfolioSummary, 'unrealizedGainLoss'),
-                'Unrealized Gain / Loss %' => section_value($portfolioSummary, 'unrealizedGainLossPct'),
-            ]); ?>
+          <section class="reportSection">
+            <h2>Goal</h2>
+            <p class="reportBodyStrong"><?= h(section_value($objective, 'title', 'Unspecified objective')) ?></p>
+            <p class="reportMuted">Primary metric: <?= h(section_value($objective, 'primaryMetric', '—')) ?></p>
           </section>
 
-          <section class="card">
-            <h2>Activity</h2>
-            <?php render_key_values([
-                'History Events' => section_value($activity, 'historyEventCount'),
-                'Buys' => section_value($activity, 'buyCount'),
-                'Sells' => section_value($activity, 'sellCount'),
-                'Dividends' => section_value($activity, 'dividendCount'),
-                'Interest' => section_value($activity, 'interestCount'),
-                'Unique Stocks' => section_value($activity, 'uniqueStocksTraded'),
-            ]); ?>
+          <section class="reportSection">
+            <h2>Period</h2>
+            <dl class="reportFacts">
+              <div>
+                <dt>Simulation range</dt>
+                <dd><?= h($periodLabel) ?></dd>
+              </div>
+              <div>
+                <dt>Starting value</dt>
+                <dd><?= h(isset($simulation['startingValue']) ? format_money_value($simulation['startingValue']) : '—') ?></dd>
+              </div>
+              <div>
+                <dt>Principal contributed</dt>
+                <dd><?= h(format_money_value($portfolioSummary['principal'] ?? 0)) ?></dd>
+              </div>
+              <div>
+                <dt>Ending cash</dt>
+                <dd><?= h(format_money_value($simulation['endingCash'] ?? 0)) ?></dd>
+              </div>
+            </dl>
           </section>
 
-          <section class="card">
-            <h2>Risk And Benchmark</h2>
-            <?php render_key_values([
-                'Benchmark' => section_value($benchmark, 'stockCode'),
-                'Benchmark Ending Value' => section_value($benchmark, 'endingValue'),
-                'Benchmark Annualized %' => section_value($benchmark, 'annualizedReturnPct'),
-                'Open Positions' => section_value($portfolio, 'openPositionCount'),
-                'Largest Position %' => section_value($portfolio, 'largestPositionPct'),
-                'Max Drawdown %' => section_value($portfolio, 'maxDrawdownPct'),
-            ]); ?>
+          <section class="reportSection">
+            <h2>Strategy Rules</h2>
+            <p class="reportBodyStrong"><?= h(section_value($strategy, 'name', 'Unnamed strategy')) ?> <span class="reportInlineMeta"><?= h(section_value($strategy, 'version')) ?></span></p>
+            <?php $constraints = is_array($objective['constraints'] ?? null) ? $objective['constraints'] : []; ?>
+            <?php if ($constraints === []): ?>
+              <p class="reportEmptyLine">—</p>
+            <?php else: ?>
+              <ul class="reportBullets">
+                <?php foreach ($constraints as $item): ?>
+                  <li><?= h((string) $item) ?></li>
+                <?php endforeach; ?>
+              </ul>
+            <?php endif; ?>
           </section>
 
-          <section class="card">
-            <h2>Taxes</h2>
-            <?php render_key_values([
-                'Dividend Gain' => section_value($taxes, 'dividendGain'),
-                'Interest Gain' => section_value($taxes, 'interestGain'),
-                'Dividend Tax' => section_value($taxes, 'dividendTax'),
-                'Interest Tax' => section_value($taxes, 'interestTax'),
-                'Estimated Tax' => section_value($taxes, 'estimatedTax'),
-            ]); ?>
+          <section class="reportSection">
+            <h2>Result</h2>
+            <dl class="reportSummaryList">
+              <div class="reportSummaryRow">
+                <dt>Ending value</dt>
+                <dd>
+                  <strong><?= h(format_money_value($portfolioSummary['currentTotal'] ?? 0)) ?></strong>
+                  <span>Portfolio value at the final available date</span>
+                </dd>
+              </div>
+              <div class="reportSummaryRow">
+                <dt>Total gain/loss</dt>
+                <dd>
+                  <strong class="<?= h(metric_value_class('gain', $portfolioSummary['totalGainLoss'] ?? 0)) ?>"><?= h(format_signed_money_value(isset($portfolioSummary['totalGainLoss']) ? (float) $portfolioSummary['totalGainLoss'] : null)) ?></strong>
+                  <span><?= h(isset($portfolioSummary['totalReturnPct']) ? format_signed_percent_value((float) $portfolioSummary['totalReturnPct']) : '—') ?></span>
+                </dd>
+              </div>
+              <div class="reportSummaryRow">
+                <dt>Avg yearly gain</dt>
+                <dd>
+                  <strong class="<?= h(metric_value_class('return', $portfolioSummary['annualizedReturnPct'] ?? 0)) ?>"><?= h(isset($portfolioSummary['annualizedReturnPct']) ? format_signed_percent_value((float) $portfolioSummary['annualizedReturnPct']) : '—') ?></strong>
+                  <span>Money-weighted annualized return using the recorded deposit schedule</span>
+                </dd>
+              </div>
+              <div class="reportSummaryRow">
+                <dt><?= h(section_value($benchmark, 'stockCode', 'SPY')) ?> yearly gain</dt>
+                <dd>
+                  <strong class="<?= h(metric_value_class('return', $benchmark['annualizedReturnPct'] ?? 0)) ?>"><?= h(isset($benchmark['annualizedReturnPct']) ? format_signed_percent_value((float) $benchmark['annualizedReturnPct']) : '—') ?></strong>
+                  <span>
+                    <?php if (isset($benchmark['endingValue'])): ?>
+                      <?= h(section_value($benchmark, 'stockCode', 'SPY')) ?> ending value: <?= h(format_money_value($benchmark['endingValue'])) ?>
+                    <?php else: ?>
+                      <?= h(section_value($benchmark, 'methodology', 'Benchmark data unavailable.')) ?>
+                    <?php endif; ?>
+                  </span>
+                </dd>
+              </div>
+              <div class="reportSummaryRow">
+                <dt>Max drawdown</dt>
+                <dd>
+                  <strong class="<?= h(metric_value_class('drawdown', $portfolio['maxDrawdownPct'] ?? 0)) ?>"><?= h(isset($portfolio['maxDrawdownPct']) ? format_signed_percent_value((float) $portfolio['maxDrawdownPct']) : '—') ?></strong>
+                  <span><?= h(format_display_value($portfolio['openPositionCount'] ?? 0)) ?> open positions at the end of the run</span>
+                </dd>
+              </div>
+            </dl>
           </section>
 
-          <section class="card">
-            <h2>Context</h2>
-            <?php render_key_values([
-                'Market Regime' => section_value($context, 'marketRegime'),
-                'Volatility Level' => section_value($context, 'volatilityLevel'),
-                'Reuse Score' => section_value($agentLearning, 'reuseScore'),
-                'Improvement Potential' => section_value($agentLearning, 'improvementPotentialScore'),
-                'Confidence Score' => section_value($agentLearning, 'confidenceScore'),
-            ]); ?>
+          <section class="reportSection">
+            <h2>Run Facts</h2>
+            <dl class="reportFacts">
+              <div>
+                <dt>Largest position</dt>
+                <dd><?= h(number_format((float) ($portfolio['largestPositionPct'] ?? 0), 2, '.', ',')) ?>%</dd>
+              </div>
+              <div>
+                <dt>Cash position</dt>
+                <dd><?= h(format_money_value($simulation['endingCash'] ?? 0)) ?> (<?= h(number_format((float) ($portfolio['cashPct'] ?? 0), 2, '.', ',')) ?>%)</dd>
+              </div>
+              <div>
+                <dt>Unique stocks traded</dt>
+                <dd><?= h(section_value($activity, 'uniqueStocksTraded', '0')) ?></dd>
+              </div>
+            </dl>
           </section>
 
-          <section class="card">
-            <h2>What Worked</h2>
-            <?php render_scored_items(is_array($takeaways['worked'] ?? null) ? $takeaways['worked'] : []); ?>
+          <section class="reportSection">
+            <h2>Tax Profile</h2>
+            <dl class="reportFacts">
+              <div>
+                <dt>Unrealized gain exposure</dt>
+                <dd><?= h(format_signed_money_value(isset($portfolioSummary['unrealizedGainLoss']) ? (float) $portfolioSummary['unrealizedGainLoss'] : null)) ?></dd>
+              </div>
+              <div>
+                <dt>Long-term tax</dt>
+                <dd><?= h(format_money_value($taxes['longTermTax'] ?? 0)) ?></dd>
+              </div>
+              <div>
+                <dt>Short-term tax</dt>
+                <dd><?= h(format_money_value($taxes['shortTermTax'] ?? 0)) ?></dd>
+              </div>
+              <div>
+                <dt>Dividend tax</dt>
+                <dd><?= h(format_money_value($taxes['dividendTax'] ?? 0)) ?></dd>
+              </div>
+              <div>
+                <dt>Total estimated tax</dt>
+                <dd><?= h(format_money_value($taxes['estimatedTax'] ?? 0)) ?></dd>
+              </div>
+            </dl>
           </section>
 
-          <section class="card">
-            <h2>What Did Not Work</h2>
-            <?php render_scored_items(is_array($takeaways['didNotWork'] ?? null) ? $takeaways['didNotWork'] : []); ?>
+          <section class="reportSection">
+            <h2>Strategy Check</h2>
+            <?php if ($factualFindings === []): ?>
+              <p class="reportEmptyLine">—</p>
+            <?php else: ?>
+              <ul class="reportBullets">
+                <?php foreach ($factualFindings as $item): ?>
+                  <li><?= h(scored_item_text($item)) ?></li>
+                <?php endforeach; ?>
+              </ul>
+            <?php endif; ?>
           </section>
 
-          <section class="card full">
-            <h2>Next Changes</h2>
-            <?php render_scored_items(is_array($takeaways['nextChanges'] ?? null) ? $takeaways['nextChanges'] : []); ?>
-          </section>
-        </div>
+          <?php if (trim(section_value($report, 'note', '')) !== ''): ?>
+            <section class="reportSection">
+              <h2>Note</h2>
+              <p class="reportBody"><?= h(section_value($report, 'note')) ?></p>
+            </section>
+          <?php endif; ?>
+        </article>
       </section>
 
       <section id="tab-history" class="tab-panel" role="tabpanel">
