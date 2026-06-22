@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 header('Content-Type: application/json; charset=utf-8');
 
-const INSERT_SECRET_KEY = 'temp';
-
 $batchDir = null;
 $savedSuccessfully = false;
 
@@ -14,14 +12,12 @@ try {
         throw new RuntimeException('Use POST for this endpoint.', 405);
     }
 
-    $providedKey = (string) ($_GET['key'] ?? $_SERVER['HTTP_X_SECRET_KEY'] ?? '');
-    if ($providedKey !== INSERT_SECRET_KEY) {
-        throw new RuntimeException('Invalid secret key.', 403);
-    }
+    $providedKey = trim((string) ($_GET['key'] ?? $_SERVER['HTTP_X_SECRET_KEY'] ?? ''));
 
     $config = load_config();
     $pdo = connect_pdo_from_config($config);
     $sessionFilesDir = null;
+    $uploader = find_uploader_by_secret($pdo, $providedKey);
 
     $storageDir = storage_root_dir();
     ensure_directory($storageDir);
@@ -38,20 +34,23 @@ INSERT INTO stock_reports (
     account_json_path,
     history_log_path,
     meta_json_path,
-    values_log_path
+    values_log_path,
+    updated_by
 ) VALUES (
     :strategy_title,
     :report_json,
     '',
     '',
     '',
-    ''
+    '',
+    :updated_by
 )
 SQL
     );
     $insertStmt->execute([
         'strategy_title' => $strategyTitle,
         'report_json' => $reportJson,
+        'updated_by' => (int) $uploader['id'],
     ]);
 
     $stockReportId = (int) $pdo->lastInsertId();
@@ -92,6 +91,10 @@ SQL
         'ok' => true,
         'id' => $stockReportId,
         'message' => 'Stock report inserted successfully.',
+        'updated_by' => [
+            'id' => (int) $uploader['id'],
+            'uploader' => (string) $uploader['uploader'],
+        ],
         'files' => [
             'account_json_path' => relative_storage_path($accountJsonPath),
             'history_log_path' => relative_storage_path($historyLogPath),
@@ -399,6 +402,25 @@ function connect_pdo_from_config(array $config): PDO
     return new PDO($dsn, $username, $password, [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
     ]);
+}
+
+function find_uploader_by_secret(PDO $pdo, string $secretKey): array
+{
+    if ($secretKey === '') {
+        throw new RuntimeException('Missing secret key.', 403);
+    }
+
+    $stmt = $pdo->prepare(
+        'SELECT id, uploader FROM report_uploaders WHERE secret_key = :secret_key LIMIT 1'
+    );
+    $stmt->execute(['secret_key' => $secretKey]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!is_array($row)) {
+        throw new RuntimeException('Invalid secret key.', 403);
+    }
+
+    return $row;
 }
 
 function delete_stock_report(PDO $pdo, int $id): void

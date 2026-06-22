@@ -13,7 +13,21 @@ if ($reportId === false || $reportId === null || $reportId < 1) {
 }
 
 $stmt = $pdo->prepare(
-    'SELECT id, report_json, created_at, account_json_path, history_log_path, meta_json_path, values_log_path FROM stock_reports WHERE id = :id LIMIT 1'
+    <<<'SQL'
+SELECT stock_reports.id,
+       stock_reports.report_json,
+       stock_reports.created_at,
+       stock_reports.account_json_path,
+       stock_reports.history_log_path,
+       stock_reports.meta_json_path,
+       stock_reports.values_log_path,
+       report_uploaders.uploader AS updated_by_name
+FROM stock_reports
+LEFT JOIN report_uploaders
+  ON report_uploaders.id = stock_reports.updated_by
+WHERE stock_reports.id = :id
+LIMIT 1
+SQL
 );
 $stmt->execute(['id' => $reportId]);
 $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -1201,7 +1215,12 @@ $reportPageKeywords = 'stock simulation report, portfolio performance, investmen
           <div class="hero-strip"></div>
           <div class="hero-body">
             <h1>Report #<?= h($row['id']) ?></h1>
-            <p class="muted">Created at <?= h($row['created_at']) ?></p>
+            <p class="muted">
+              Created at <?= h($row['created_at']) ?>
+              <?php if (!empty($row['updated_by_name'])): ?>
+                / Updated by <?= h($row['updated_by_name']) ?>
+              <?php endif; ?>
+            </p>
           </div>
         </div>
         <div class="card" style="margin-top: 18px;">

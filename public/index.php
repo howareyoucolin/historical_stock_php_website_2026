@@ -20,9 +20,14 @@ if ($page > $totalPages) {
 
 $stmt = $pdo->prepare(
     <<<'SQL'
-SELECT id, report_json, created_at
-     , strategy_title
+SELECT stock_reports.id,
+       stock_reports.report_json,
+       stock_reports.created_at,
+       stock_reports.strategy_title,
+       report_uploaders.uploader AS updated_by_name
 FROM stock_reports
+LEFT JOIN report_uploaders
+  ON report_uploaders.id = stock_reports.updated_by
 ORDER BY created_at DESC, id DESC
 LIMIT :limit OFFSET :offset
 SQL
@@ -265,7 +270,12 @@ $pageKeywords = 'stock reports, simulation reports, portfolio summary, trading s
           <?php foreach ($reports as $row): ?>
             <?php $label = report_label($row); ?>
             <a class="row" href="/report.php?id=<?= h($row['id']) ?>">
-              <div class="meta">Report #<?= h($row['id']) ?> / <?= h($row['created_at']) ?></div>
+              <div class="meta">
+                Report #<?= h($row['id']) ?> / <?= h($row['created_at']) ?>
+                <?php if (!empty($row['updated_by_name'])): ?>
+                  / Updated by <?= h($row['updated_by_name']) ?>
+                <?php endif; ?>
+              </div>
               <div class="title"><?= h($label['title']) ?></div>
               <div class="summary">End <?= h($label['endDate']) ?> / Value <span class="figure"><?= h($label['endingValue']) ?></span> / Return <span class="figure"><?= h($label['returnPct']) ?>%</span></div>
             </a>

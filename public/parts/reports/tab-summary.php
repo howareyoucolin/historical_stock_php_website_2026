@@ -4,6 +4,12 @@
       <span class="reportKicker">Simulation Report</span>
       <h1><?= h(section_value($strategy, 'name', 'Unnamed strategy')) ?></h1>
       <p class="reportLead"><?= h(section_value($takeaways, 'summary', 'No written assessment is available for this report yet.')) ?></p>
+      <p class="reportMuted">
+        Created at <?= h($row['created_at']) ?>
+        <?php if (!empty($row['updated_by_name'])): ?>
+          / Updated by <?= h($row['updated_by_name']) ?>
+        <?php endif; ?>
+      </p>
     </header>
 
     <section class="reportSection">
