@@ -1085,6 +1085,7 @@ function build_values_summary(array $snapshots): array
       $portfolioSummary = is_array($report['portfolioSummary'] ?? null) ? $report['portfolioSummary'] : [];
       $benchmark = is_array($report['benchmark'] ?? null) ? $report['benchmark'] : [];
       $portfolio = is_array($report['portfolio'] ?? null) ? $report['portfolio'] : [];
+      $positions = is_array($report['positions'] ?? null) ? $report['positions'] : [];
       $taxes = is_array($report['taxes'] ?? null) ? $report['taxes'] : [];
       $takeaways = is_array($report['takeaways'] ?? null) ? $report['takeaways'] : [];
       $agentLearning = is_array($report['agentLearning'] ?? null) ? $report['agentLearning'] : [];
@@ -1281,6 +1282,48 @@ function build_values_summary(array $snapshots): array
               <p class="reportBody"><?= h(section_value($report, 'note')) ?></p>
             </section>
           <?php endif; ?>
+
+          <section class="reportSection">
+            <h2>Positions At Report Date</h2>
+            <?php $positionRows = is_array($positions['rows'] ?? null) ? $positions['rows'] : []; ?>
+            <?php if ($positionRows === []): ?>
+              <p class="reportEmptyLine">—</p>
+            <?php else: ?>
+              <div class="reportTableScroll">
+                <table class="reportTable">
+                  <thead>
+                    <tr>
+                      <th class="alignLeft" scope="col">Symbol</th>
+                      <th scope="col">Quantity</th>
+                      <th scope="col">Last Price</th>
+                      <th scope="col">Market Value</th>
+                      <th scope="col">Unit Cost</th>
+                      <th scope="col">Total Cost</th>
+                      <th scope="col">$ Gain/Loss</th>
+                      <th scope="col">% Gain/Loss</th>
+                      <th scope="col">% of Group</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <?php foreach ($positionRows as $positionRow): ?>
+                      <tr>
+                        <td class="alignLeft reportPositionName"><?= h(is_array($positionRow) ? ($positionRow['stockCode'] ?? '') : '') ?></td>
+                        <td><?= h(format_display_value(is_array($positionRow) ? ($positionRow['quantity'] ?? '') : '')) ?></td>
+                        <td><?= h(format_money_value(is_array($positionRow) ? ($positionRow['currentPrice'] ?? '') : '')) ?></td>
+                        <td><?= h(format_money_value(is_array($positionRow) ? ($positionRow['totalValue'] ?? '') : '')) ?></td>
+                        <td><?= h(format_money_value(is_array($positionRow) ? ($positionRow['averageCost'] ?? '') : '')) ?></td>
+                        <td><?= h(format_money_value(is_array($positionRow) ? ($positionRow['totalCostBasis'] ?? '') : '')) ?></td>
+                        <td class="<?= h(metric_value_class('gain', is_array($positionRow) ? ($positionRow['totalGainLoss'] ?? '') : '')) ?>"><?= h(format_signed_money_value(is_array($positionRow) && isset($positionRow['totalGainLoss']) ? (float) $positionRow['totalGainLoss'] : null)) ?></td>
+                        <td class="<?= h(metric_value_class('gain', is_array($positionRow) ? ($positionRow['totalGainLoss'] ?? '') : '')) ?>"><?= h(format_signed_percent_value(is_array($positionRow) && isset($positionRow['percentGainLoss']) ? (float) $positionRow['percentGainLoss'] : null)) ?></td>
+                        <td><?= h(is_array($positionRow) && isset($positionRow['percentOfGroup']) ? number_format((float) $positionRow['percentOfGroup'], 2, '.', ',') . '%' : '—') ?></td>
+                      </tr>
+                    <?php endforeach; ?>
+                  </tbody>
+                </table>
+              </div>
+            <?php endif; ?>
+            <p class="reportMuted" style="margin-top: 10px;">As of <?= h(section_value($positions, 'asOfDate', section_value($simulation, 'simEndDate'))) ?></p>
+          </section>
         </article>
       </section>
 
