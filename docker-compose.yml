@@ -13,6 +13,7 @@ services:
       DB_PASSWORD: stock_pass
     volumes:
       - ./:/var/www/html
+      - ../simulator/user-sessions:/session-files:ro
     depends_on:
       - mysql
 

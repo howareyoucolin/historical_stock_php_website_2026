@@ -4,6 +4,8 @@ RUN docker-php-ext-install pdo_mysql
 
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 
+COPY php.ini /usr/local/etc/php/conf.d/custom.ini
+
 RUN sed -ri 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/000-default.conf \
     && sed -ri 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf
 

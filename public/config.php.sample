@@ -10,4 +10,7 @@ return [
         'password' => 'your_db_password',
         'charset' => 'utf8mb4',
     ],
+    'paths' => [
+        'session_files_dir' => '/session-files',
+    ],
 ];
