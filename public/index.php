@@ -139,9 +139,37 @@ $pageKeywords = 'stock reports, simulation reports, portfolio summary, trading s
       color: var(--text);
       font-family: Arial, Helvetica, sans-serif;
     }
+    .page-banner {
+      background:
+        radial-gradient(circle at top left, rgba(26, 115, 232, 0.18), transparent 38%),
+        linear-gradient(135deg, #eef4ff 0%, #f8fbff 46%, #f4f7fc 100%);
+      border-bottom: 1px solid rgba(26, 115, 232, 0.10);
+      box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.7);
+    }
+    .page-banner-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 34px 20px 30px;
+    }
+    .banner-kicker {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(26, 115, 232, 0.10);
+      color: var(--blue);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .banner-copy {
+      max-width: 760px;
+    }
     .shell {
       min-height: 100vh;
-      padding: 28px 20px 40px;
+      padding: 24px 20px 40px;
     }
     main {
       max-width: 1180px;
@@ -248,6 +276,7 @@ $pageKeywords = 'stock reports, simulation reports, portfolio summary, trading s
       text-decoration: underline;
     }
     @media (max-width: 640px) {
+      .page-banner-inner { padding: 26px 14px 24px; }
       .shell { padding: 20px 14px 32px; }
       h1 { font-size: 30px; }
       .card-strip { margin-left: 20px; }
@@ -257,13 +286,17 @@ $pageKeywords = 'stock reports, simulation reports, portfolio summary, trading s
   </style>
 </head>
 <body>
-  <div class="shell">
-    <main>
-      <div class="header">
+  <div class="page-banner">
+    <div class="page-banner-inner">
+      <span class="banner-kicker">Stock Report Archive</span>
+      <div class="header banner-copy">
         <h1>Simulation Reports</h1>
         <p class="muted">Showing <?= h(count($reports)) ?> of <?= h($totalReports) ?> reports, newest first. Page <?= h($page) ?> of <?= h($totalPages) ?>.</p>
       </div>
-
+    </div>
+  </div>
+  <div class="shell">
+    <main>
       <section class="card primary-card">
         <div class="card-strip"></div>
         <div class="report-list">

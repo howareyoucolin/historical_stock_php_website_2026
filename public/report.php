@@ -459,6 +459,12 @@ $reportReturn = isset($reportMetaPortfolio['totalReturnPct']) ? number_format((f
 $reportEndDate = (string) ($reportMetaSimulation['simEndDate'] ?? 'latest date');
 $reportPageDescription = 'Detailed stock simulation report with portfolio performance, risk metrics, taxes, strategy notes, and report-date positions. End date ' . $reportEndDate . ', ending value ' . $reportEndingValue . ', total return ' . $reportReturn . '.';
 $reportPageKeywords = 'stock simulation report, portfolio performance, investment report, trading strategy report, positions table, portfolio return, risk metrics';
+$reportHeaderTitle = trim((string) ($reportMetaStrategy['name'] ?? '')) !== ''
+    ? (string) $reportMetaStrategy['name']
+    : ('Report #' . $row['id']);
+$reportHeaderSummary = trim((string) ($report['takeaways']['summary'] ?? '')) !== ''
+    ? (string) $report['takeaways']['summary']
+    : 'Detailed simulation report with summary, activity log, and value timeline.';
 
 ?>
 <!DOCTYPE html>
@@ -495,10 +501,49 @@ $reportPageKeywords = 'stock simulation report, portfolio performance, investmen
       color: var(--text);
       font-family: Arial, Helvetica, sans-serif;
     }
+    .pageBanner {
+      background:
+        radial-gradient(circle at top left, rgba(26, 115, 232, 0.18), transparent 34%),
+        linear-gradient(135deg, #eef4ff 0%, #f8fbff 44%, #f4f7fc 100%);
+      border-bottom: 1px solid rgba(26, 115, 232, 0.10);
+      box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.75);
+    }
+    .pageBannerInner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 30px 20px 28px;
+    }
+    .pageBannerCopy {
+      max-width: 780px;
+    }
+    .pageBannerKicker {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(26, 115, 232, 0.10);
+      color: var(--blue);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .pageBannerTitle {
+      margin: 0 0 10px;
+      font-size: 38px;
+      line-height: 1.08;
+      font-weight: 500;
+      letter-spacing: -0.03em;
+    }
+    .pageBannerMeta {
+      color: var(--muted);
+      max-width: 720px;
+    }
     main {
       max-width: 1200px;
       margin: 0 auto;
-      padding: 28px 20px 56px;
+      padding: 24px 20px 56px;
     }
     a {
       color: var(--blue);
@@ -1188,6 +1233,8 @@ $reportPageKeywords = 'stock simulation report, portfolio performance, investmen
       .reportDoc { padding: 26px 22px 30px; }
     }
     @media (max-width: 640px) {
+      .pageBannerInner { padding: 24px 14px 22px; }
+      .pageBannerTitle { font-size: 30px; }
       main { padding: 20px 14px 40px; }
       .hero-body { padding: 20px; }
       .hero-strip { margin-left: 20px; }
@@ -1207,9 +1254,24 @@ $reportPageKeywords = 'stock simulation report, portfolio performance, investmen
   </style>
 </head>
 <body>
+  <div class="pageBanner">
+    <div class="pageBannerInner">
+      <div class="pageBannerCopy">
+        <p class="topline"><a href="/index.php">All Reports</a> / Report #<?= h($row['id']) ?></p>
+        <span class="pageBannerKicker">Simulation Report</span>
+        <h1 class="pageBannerTitle"><?= h($reportHeaderTitle) ?></h1>
+        <p class="pageBannerMeta">
+          <?= h($reportHeaderSummary) ?><br>
+          Created at <?= h($row['created_at']) ?>
+          <?php if (!empty($row['updated_by_name'])): ?>
+            / Updated by <?= h($row['updated_by_name']) ?>
+          <?php endif; ?>
+        </p>
+      </div>
+    </div>
+  </div>
   <main>
     <div class="reportShell">
-      <p class="topline"><a href="/index.php">All Reports</a> / Report #<?= h($row['id']) ?></p>
       <?php if (!$isValidJson): ?>
         <div class="hero-card">
           <div class="hero-strip"></div>
