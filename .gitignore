@@ -4,3 +4,4 @@ storage/stock-reports/*
 data/importers/logs/*
 !data/importers/logs/.gitkeep
 .DS_Store
+backup/
