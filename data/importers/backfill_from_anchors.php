@@ -128,7 +128,10 @@ SQL
                 'acquirer_stock_code' => $acquirerCode,
                 'acquirer_stock_id' => $acquirerCode !== null ? resolve_id($symbolToId, $acquirerCode) : null,
                 'share_ratio' => isset($stock['share_ratio']) && is_numeric($stock['share_ratio']) ? (float) $stock['share_ratio'] : null,
-                'note' => trim((string) ($stock['note'] ?? '')) ?: null,
+                'note' => (static function ($n) {
+                    $n = trim((string) $n);
+                    return $n === '' ? null : mb_substr($n, 0, 500);
+                })($stock['note'] ?? null),
             ]);
             $stats['actions']++;
         }
