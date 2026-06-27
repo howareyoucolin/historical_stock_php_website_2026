@@ -1,0 +1,111 @@
+{
+  "_note": "Starter corporate-action rules for historical symbols that no longer have straightforward daily-price downloads. Seeded from the simulator config where the same symbols are missing from stock_daily_prices here.",
+  "actions": [
+    {
+      "stockCode": "ATVI",
+      "date": "2023-10-13",
+      "type": "cash_buyout",
+      "cashPerShare": 95,
+      "note": "Acquired by Microsoft for cash."
+    },
+    {
+      "stockCode": "CERN",
+      "date": "2022-06-08",
+      "type": "cash_buyout",
+      "cashPerShare": 95,
+      "note": "Acquired by Oracle for cash."
+    },
+    {
+      "stockCode": "CTXS",
+      "date": "2022-09-30",
+      "type": "cash_buyout",
+      "cashPerShare": 104,
+      "note": "Acquired by Vista and Evergreen for cash."
+    },
+    {
+      "stockCode": "DISH",
+      "date": "2024-01-02",
+      "type": "cash_buyout",
+      "cashPerShare": 5.5,
+      "note": "Synthetic terminal value used to stand in for the EchoStar recombination."
+    },
+    {
+      "stockCode": "FL",
+      "date": "2025-09-08",
+      "type": "cash_buyout",
+      "cashPerShare": 24,
+      "note": "Foot Locker acquisition by Dick's Sporting Goods modeled at 24.00 cash."
+    },
+    {
+      "stockCode": "FRC",
+      "date": "2023-05-01",
+      "type": "equity_wipeout",
+      "note": "First Republic resolution wiped out common equity."
+    },
+    {
+      "stockCode": "JWN",
+      "date": "2025-05-21",
+      "type": "cash_buyout",
+      "cashPerShare": 24.5,
+      "note": "Nordstrom privatization modeled as 24.25 cash plus 0.25 special dividend equivalent."
+    },
+    {
+      "stockCode": "K",
+      "date": "2025-12-11",
+      "type": "cash_buyout",
+      "cashPerShare": 83.5,
+      "note": "Kellanova acquisition by Mars modeled at 83.50 cash."
+    },
+    {
+      "stockCode": "MRO",
+      "date": "2024-11-22",
+      "type": "stock_swap",
+      "acquirerStockCode": "COP",
+      "shareRatio": 0.255,
+      "note": "Marathon Oil acquisition by ConocoPhillips modeled at the published exchange ratio."
+    },
+    {
+      "stockCode": "NLSN",
+      "date": "2022-10-11",
+      "type": "cash_buyout",
+      "cashPerShare": 28,
+      "note": "Acquired by Elliott and Brookfield for cash."
+    },
+    {
+      "stockCode": "PARA",
+      "date": "2025-08-07",
+      "type": "cash_buyout",
+      "cashPerShare": 13,
+      "note": "Synthetic terminal merger value used for simulator continuity."
+    },
+    {
+      "stockCode": "SIVB",
+      "date": "2023-03-10",
+      "type": "equity_wipeout",
+      "note": "Bank failure; common equity effectively wiped out."
+    },
+    {
+      "stockCode": "TWTR",
+      "date": "2022-10-28",
+      "type": "cash_buyout",
+      "cashPerShare": 54.2,
+      "note": "Taken private for cash."
+    },
+    {
+      "stockCode": "WBA",
+      "date": "2025-08-28",
+      "type": "cash_buyout",
+      "cashPerShare": 11.45,
+      "note": "Taken private by Sycamore; modeled at headline cash price."
+    },
+    {
+      "stockCode": "XLNX",
+      "date": "2022-02-14",
+      "type": "stock_swap",
+      "acquirerStockCode": "AMD",
+      "shareRatio": 1.7234,
+      "cashPerShare": 114,
+      "note": "Converted into AMD shares; fractional shares paid in cash approximately."
+    }
+  ]
+}

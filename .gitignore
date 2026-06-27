@@ -1,4 +1,6 @@
 public/config.php
 storage/stock-reports/*
 !storage/stock-reports/.gitkeep
+data/importers/logs/*
+!data/importers/logs/.gitkeep
 .DS_Store

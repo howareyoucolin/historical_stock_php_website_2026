@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+require_once dirname(__DIR__) . '/support/stock_symbol_utils.php';
+
 return [
     'name' => 'stocks',
     'run' => static function (): void {
@@ -29,39 +31,37 @@ return [
             }
 
             foreach ($value as $ticker) {
-                $ticker = normalize_symbol((string) $ticker);
-                if ($ticker === '') {
+                $symbol = normalize_stock_symbol((string) $ticker);
+                if ($symbol === '') {
                     continue;
                 }
 
-                $symbols[$ticker] = true;
+                $canonicalSymbol = resolve_price_symbol($symbol);
+                if ($canonicalSymbol === '') {
+                    continue;
+                }
+
+                $symbols[$canonicalSymbol] = $canonicalSymbol;
             }
         }
 
-        $symbols = array_keys($symbols);
-        sort($symbols, SORT_STRING);
-
         $pdo = connect_pdo();
         $existingSymbols = fetch_existing_symbols($pdo);
-        $missingSymbols = array_values(array_diff($symbols, $existingSymbols));
+        $missingSymbols = array_diff_key($symbols, array_flip($existingSymbols));
 
-        if ($missingSymbols === []) {
-            echo "Processed " . count($symbols) . " symbols.\n";
-            echo "Inserted 0 new stock rows.\n";
-            echo "Skipped " . count($symbols) . " existing stock rows.\n";
+        $insertStmt = $pdo->prepare('INSERT INTO stocks (symbol) VALUES (:symbol)');
 
-            return;
-        }
-
-        $stmt = $pdo->prepare('INSERT INTO stocks (symbol) VALUES (:symbol)');
-
-        foreach ($missingSymbols as $symbol) {
-            $stmt->execute(['symbol' => $symbol]);
+        $inserted = 0;
+        foreach ($missingSymbols as $symbol => $ignored) {
+            $insertStmt->execute([
+                'symbol' => $symbol,
+            ]);
+            $inserted += $insertStmt->rowCount();
         }
 
         echo "Processed " . count($symbols) . " symbols.\n";
-        echo "Inserted " . count($missingSymbols) . " new stock rows.\n";
-        echo "Skipped " . count($existingSymbols) . " existing stock rows.\n";
+        echo "Inserted {$inserted} new stock rows.\n";
+        echo "Skipped " . (count($symbols) - $inserted) . " existing stock rows.\n";
     },
 ];
 
@@ -71,14 +71,6 @@ function fetch_existing_symbols(PDO $pdo): array
     $rows = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
     return array_map(static fn (mixed $symbol): string => (string) $symbol, $rows);
-}
-
-function normalize_symbol(string $ticker): string
-{
-    $ticker = trim($ticker);
-    $ticker = preg_replace('/\s+\(.*\)$/', '', $ticker) ?? $ticker;
-
-    return trim($ticker);
 }
 
 function connect_pdo(): PDO

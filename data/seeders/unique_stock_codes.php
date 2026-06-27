@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+require_once dirname(__DIR__) . '/support/stock_symbol_utils.php';
+
 return [
     'name' => 'unique_stock_codes',
     'run' => static function (): void {
@@ -31,7 +33,7 @@ return [
             }
 
             foreach ($value as $ticker) {
-                $ticker = trim((string) $ticker);
+                $ticker = resolve_price_symbol((string) $ticker);
                 if ($ticker === '') {
                     continue;
                 }
