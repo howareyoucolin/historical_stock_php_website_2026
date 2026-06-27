@@ -1,3 +1,4 @@
 public/config.php
 storage/stock-reports/*
 !storage/stock-reports/.gitkeep
+.DS_Store
