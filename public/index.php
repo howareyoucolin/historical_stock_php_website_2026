@@ -10,7 +10,7 @@ $page = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT);
 $page = $page !== false && $page !== null && $page > 0 ? $page : 1;
 $offset = ($page - 1) * $perPage;
 
-$totalReports = (int) $pdo->query('SELECT COUNT(*) FROM stock_reports')->fetchColumn();
+$totalReports = (int) $pdo->query('SELECT COUNT(*) FROM reports')->fetchColumn();
 $totalPages = max(1, (int) ceil($totalReports / $perPage));
 
 if ($page > $totalPages) {
@@ -20,14 +20,14 @@ if ($page > $totalPages) {
 
 $stmt = $pdo->prepare(
     <<<'SQL'
-SELECT stock_reports.id,
-       stock_reports.report_json,
-       stock_reports.created_at,
-       stock_reports.strategy_title,
+SELECT reports.id,
+       reports.report_json,
+       reports.created_at,
+       reports.strategy_title,
        report_uploaders.uploader AS updated_by_name
-FROM stock_reports
+FROM reports
 LEFT JOIN report_uploaders
-  ON report_uploaders.id = stock_reports.updated_by
+  ON report_uploaders.id = reports.updated_by
 ORDER BY created_at DESC, id DESC
 LIMIT :limit OFFSET :offset
 SQL

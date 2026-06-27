@@ -28,7 +28,7 @@ try {
 
     $insertStmt = $pdo->prepare(
         <<<'SQL'
-INSERT INTO stock_reports (
+INSERT INTO reports (
     strategy_title,
     report_json,
     account_json_path,
@@ -67,7 +67,7 @@ SQL
 
     $updateStmt = $pdo->prepare(
         <<<'SQL'
-UPDATE stock_reports
+UPDATE reports
 SET
     account_json_path = :account_json_path,
     history_log_path = :history_log_path,
@@ -425,6 +425,6 @@ function find_uploader_by_secret(PDO $pdo, string $secretKey): array
 
 function delete_stock_report(PDO $pdo, int $id): void
 {
-    $stmt = $pdo->prepare('DELETE FROM stock_reports WHERE id = :id');
+    $stmt = $pdo->prepare('DELETE FROM reports WHERE id = :id');
     $stmt->execute(['id' => $id]);
 }

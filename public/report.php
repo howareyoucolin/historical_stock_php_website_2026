@@ -14,18 +14,18 @@ if ($reportId === false || $reportId === null || $reportId < 1) {
 
 $stmt = $pdo->prepare(
     <<<'SQL'
-SELECT stock_reports.id,
-       stock_reports.report_json,
-       stock_reports.created_at,
-       stock_reports.account_json_path,
-       stock_reports.history_log_path,
-       stock_reports.meta_json_path,
-       stock_reports.values_log_path,
+SELECT reports.id,
+       reports.report_json,
+       reports.created_at,
+       reports.account_json_path,
+       reports.history_log_path,
+       reports.meta_json_path,
+       reports.values_log_path,
        report_uploaders.uploader AS updated_by_name
-FROM stock_reports
+FROM reports
 LEFT JOIN report_uploaders
-  ON report_uploaders.id = stock_reports.updated_by
-WHERE stock_reports.id = :id
+  ON report_uploaders.id = reports.updated_by
+WHERE reports.id = :id
 LIMIT 1
 SQL
 );
