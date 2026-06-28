@@ -47,7 +47,7 @@ $valuesFileContent = read_stored_file($projectRoot, (string) ($row['values_log_p
 $historyEntries = parse_history_entries($historyFileContent);
 $historySummary = build_history_summary($historyEntries);
 $historyTypes = list_history_types($historyEntries);
-$valueSnapshots = parse_value_snapshots($valuesFileContent);
+$valueSnapshots = trim_leading_zero_value_snapshots(parse_value_snapshots($valuesFileContent));
 $valuesSummary = build_values_summary($valueSnapshots);
 
 function connect_pdo(array $config): PDO
@@ -404,6 +404,21 @@ function parse_value_snapshots(string $contents): array
     }
 
     return $snapshots;
+}
+
+// Drop the leading unfunded period (total value 0 before the first deposit) so the value graph and
+// summary start when the portfolio first holds value. Mirrors the simulator's trimLeadingZeroValues:
+// a sim started after the account's default date records zero-value days that are just noise. Interior
+// zeros are kept; an all-zero series collapses to empty.
+function trim_leading_zero_value_snapshots(array $snapshots): array
+{
+    foreach ($snapshots as $index => $snapshot) {
+        if ((float) $snapshot['value'] !== 0.0) {
+            return array_values(array_slice($snapshots, $index));
+        }
+    }
+
+    return [];
 }
 
 function build_values_summary(array $snapshots): array
