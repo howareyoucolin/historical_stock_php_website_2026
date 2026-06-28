@@ -21,6 +21,7 @@ SELECT reports.id,
        reports.history_log_path,
        reports.meta_json_path,
        reports.values_log_path,
+       reports.version,
        report_uploaders.uploader AS updated_by_name
 FROM reports
 LEFT JOIN report_uploaders
@@ -1262,7 +1263,7 @@ $reportHeaderSummary = trim((string) ($report['takeaways']['summary'] ?? '')) !=
         <h1 class="pageBannerTitle"><?= h($reportHeaderTitle) ?></h1>
         <p class="pageBannerMeta">
           <?= h($reportHeaderSummary) ?><br>
-          Created at <?= h($row['created_at']) ?>
+          Created at <?= h($row['created_at']) ?> / v<?= h($row['version']) ?>
           <?php if (!empty($row['updated_by_name'])): ?>
             / Updated by <?= h($row['updated_by_name']) ?>
           <?php endif; ?>
@@ -1278,7 +1279,7 @@ $reportHeaderSummary = trim((string) ($report['takeaways']['summary'] ?? '')) !=
           <div class="hero-body">
             <h1>Report #<?= h($row['id']) ?></h1>
             <p class="muted">
-              Created at <?= h($row['created_at']) ?>
+              Created at <?= h($row['created_at']) ?> / v<?= h($row['version']) ?>
               <?php if (!empty($row['updated_by_name'])): ?>
                 / Updated by <?= h($row['updated_by_name']) ?>
               <?php endif; ?>

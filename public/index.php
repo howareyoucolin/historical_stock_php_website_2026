@@ -24,6 +24,7 @@ SELECT reports.id,
        reports.report_json,
        reports.created_at,
        reports.strategy_title,
+       reports.version,
        report_uploaders.uploader AS updated_by_name
 FROM reports
 LEFT JOIN report_uploaders
@@ -304,7 +305,7 @@ $pageKeywords = 'stock reports, simulation reports, portfolio summary, trading s
             <?php $label = report_label($row); ?>
             <a class="row" href="/report.php?id=<?= h($row['id']) ?>">
               <div class="meta">
-                Report #<?= h($row['id']) ?> / <?= h($row['created_at']) ?>
+                Report #<?= h($row['id']) ?> / <?= h($row['created_at']) ?> / v<?= h($row['version']) ?>
                 <?php if (!empty($row['updated_by_name'])): ?>
                   / Updated by <?= h($row['updated_by_name']) ?>
                 <?php endif; ?>
